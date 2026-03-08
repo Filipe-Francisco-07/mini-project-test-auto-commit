@@ -1,0 +1,43 @@
+name: DocGen Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+
+  docgen:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Install DocGen Engine
+        run: |
+          composer require filipe/docgen-engine --no-interaction || true
+
+      - name: Run DocGen
+        run: vendor/bin/docgen || true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Generate phpDocumentor
+        run: |
+          composer require phpdocumentor/phpdocumentor --no-interaction || true
+          vendor/bin/phpdocumentor --target docs || true
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs
