@@ -1,0 +1,40 @@
+name: DocGen Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  docgen:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Instalar dependências
+        run: composer install --no-interaction --no-progress
+        working-directory: engine
+
+      - name: Executar DocGen
+        run: php bin/run.php
+        working-directory: engine
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+
+      - name: Gerar documentação phpDocumentor
+        run: vendor/bin/phpdoc --target docs || true
+        working-directory: engine
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: engine/docs
