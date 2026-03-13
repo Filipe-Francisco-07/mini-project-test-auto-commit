@@ -15,18 +15,9 @@ class StringHelper
     {
         if (strlen($text) <= $limit) {
             return $text;
-        /**
-         * Classe responsável por fornecer métodos utilitários para manipulação de strings.
-         */
         }
 
         return substr($text, 0, $limit) . "...";
-    /**
-     * Converte uma string em um formato "slug", substituindo caracteres não alfanuméricos por hífens.
-     * 
-     * @param mixed $text A string a ser convertida em slug.
-     * @return mixed A string formatada como slug.
-     */
     }
 
 }
