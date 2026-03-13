@@ -20,13 +20,6 @@ class StringHelper
         return trim($text, '-');
     }
 
-    /**
-     * Trunca uma string para um comprimento máximo especificado e adiciona reticências se necessário.
-     * 
-     * @param mixed $text O texto a ser truncado.
-     * @param mixed $limit O limite de caracteres para truncamento.
-     * @return mixed A string truncada ou original, dependendo do comprimento.
-     */
     public function truncate($text, $limit)
     {
         if (strlen($text) <= $limit) {
