@@ -11,11 +11,9 @@ class UserService {
         ];
     }
 
-
     public function findUserById($id) {
         return [
             "id" => $id,
-
             "name" => "Usuário Teste",
             "email" => "teste@email.com"
         ];
