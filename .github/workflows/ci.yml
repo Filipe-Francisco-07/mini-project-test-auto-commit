@@ -6,8 +6,17 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  docgen:
+  build:
     runs-on: ubuntu-latest
 
     env:
@@ -30,3 +39,36 @@ jobs:
       - name: Executar testes unitários
         if: ${{ hashFiles('phpunit.xml', 'phpunit.xml.dist') != '' }}
         run: vendor/bin/phpunit --colors=never
+
+      - name: Gerar documentação (phpDocumentor)
+        run: |
+          curl -sL https://phpdoc.org/phpDocumentor.phar -o phpdoc.phar
+          mkdir -p docs
+          if [ -d src ]; then
+            php phpdoc.phar run --directory=src --target=docs --template=default --title="API Documentation" 2>/dev/null || true
+          else
+            php phpdoc.phar run --directory=. --ignore=vendor,tests,docs,node_modules --target=docs --template=default --title="API Documentation" 2>/dev/null || true
+          fi
+
+      - name: Configurar GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+
+      - name: Upload artefato do Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: "github-pages"
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
