@@ -1,8 +1,5 @@
 <?php
 
-/**
- * Classe responsável pela gestão de usuários, incluindo criação e busca de usuários por ID.
- */
 class UserService {
 
 
