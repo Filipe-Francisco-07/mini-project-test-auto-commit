@@ -1,0 +1,219 @@
+{
+  "name": "DocGen Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "docgen",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "docgen-webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value1": "={{ $json.body.event }}",
+              "value2": "push"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.body.event }}",
+              "value2": "test_result"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.body.event }}",
+              "value2": "docs_generated"
+            }
+          ]
+        }
+      },
+      "id": "switch-event",
+      "name": "Tipo de Evento",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "subject",
+              "value": "=✅ [DocGen] Push em {{ $json.body.repo }} ({{ $json.body.branch }})"
+            },
+            {
+              "name": "body",
+              "value": "=<!DOCTYPE html><html><body style=\"font-family:system-ui,sans-serif;background:#f8fafc;margin:0;padding:24px\">\n<div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)\">\n  <div style=\"background:#16a34a;padding:20px 28px\">\n    <h1 style=\"color:#fff;margin:0;font-size:1.2rem\">✅ Push realizado com sucesso</h1>\n    <p style=\"color:#bbf7d0;margin:4px 0 0;font-size:0.9rem\">{{ $json.body.repo }} · {{ $json.body.branch }}</p>\n  </div>\n  <div style=\"padding:24px 28px\">\n    <table style=\"width:100%;border-collapse:collapse;font-size:0.9rem\">\n      <tr><td style=\"padding:8px 0;color:#6b7280;width:140px\">Repositório</td><td><a href=\"{{ $json.body.repoUrl }}\" style=\"color:#2563eb\">{{ $json.body.repo }}</a></td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Branch</td><td><code style=\"background:#e2e8f0;padding:2px 6px;border-radius:4px\">{{ $json.body.branch }}</code></td></tr>\n      <tr><td style=\"padding:8px 0;color:#6b7280\">Commit</td><td><a href=\"{{ $json.body.commitUrl }}\" style=\"color:#2563eb\"><code>{{ $json.body.sha }}</code></a></td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Mensagem</td><td><em>{{ $json.body.commitMessage }}</em></td></tr>\n      <tr><td style=\"padding:8px 0;color:#6b7280\">Autor</td><td>{{ $json.body.author }} &lt;{{ $json.body.authorEmail }}&gt;</td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Arquivos</td><td>{{ $json.body.filesChanged }} alterado(s) &nbsp;·&nbsp; <span style=\"color:#16a34a\">+{{ $json.body.insertions }}</span> &nbsp;·&nbsp; <span style=\"color:#dc2626\">-{{ $json.body.deletions }}</span></td></tr>\n      <tr><td style=\"padding:8px 0;color:#6b7280\">Data/Hora</td><td>{{ $json.body.timestamp }}</td></tr>\n    </table>\n    <div style=\"margin-top:20px;display:flex;gap:12px;flex-wrap:wrap\">\n      {{ $json.body.docsUrl ? '<a href=\"' + $json.body.docsUrl + '\" style=\"display:inline-block;padding:8px 16px;background:#0ea5e9;color:#fff;border-radius:6px;text-decoration:none;font-size:0.85rem\">📄 Ver Documentação</a>' : '' }}\n      {{ $json.body.actionsUrl ? '<a href=\"' + $json.body.actionsUrl + '\" style=\"display:inline-block;padding:8px 16px;background:#7c3aed;color:#fff;border-radius:6px;text-decoration:none;font-size:0.85rem\">⚙️ GitHub Actions</a>' : '' }}\n      {{ $json.body.repoUrl ? '<a href=\"' + $json.body.repoUrl + '\" style=\"display:inline-block;padding:8px 16px;background:#374151;color:#fff;border-radius:6px;text-decoration:none;font-size:0.85rem\">📦 Ver Repositório</a>' : '' }}\n    </div>\n  </div>\n  <div style=\"padding:12px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#9ca3af\">\n    Gerado pelo PHP DocGen Runner\n  </div>\n</div>\n</body></html>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-push",
+      "name": "Formatar Push",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [720, 120]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "subject",
+              "value": "={{ $json.body.success ? '✅' : '❌' }} [DocGen] Testes em {{ $json.body.repo }} — {{ $json.body.passRate }}% ({{ $json.body.passed }}/{{ $json.body.total }})"
+            },
+            {
+              "name": "body",
+              "value": "=<!DOCTYPE html><html><body style=\"font-family:system-ui,sans-serif;background:#f8fafc;margin:0;padding:24px\">\n<div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)\">\n  <div style=\"background:{{ $json.body.success ? '#16a34a' : '#dc2626' }};padding:20px 28px\">\n    <h1 style=\"color:#fff;margin:0;font-size:1.2rem\">{{ $json.body.success ? '✅ Todos os testes passaram' : '❌ Há falhas nos testes' }}</h1>\n    <p style=\"color:{{ $json.body.success ? '#bbf7d0' : '#fecaca' }};margin:4px 0 0;font-size:0.9rem\">{{ $json.body.repo }} · {{ $json.body.branch }}</p>\n  </div>\n  <div style=\"padding:24px 28px\">\n    <div style=\"display:flex;gap:12px;margin-bottom:20px\">\n      <div style=\"flex:1;text-align:center;padding:12px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0\">\n        <div style=\"font-size:1.8rem;font-weight:700;color:#16a34a\">{{ $json.body.passed }}</div>\n        <div style=\"font-size:0.8rem;color:#6b7280\">Passou</div>\n      </div>\n      <div style=\"flex:1;text-align:center;padding:12px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca\">\n        <div style=\"font-size:1.8rem;font-weight:700;color:#dc2626\">{{ $json.body.failed }}</div>\n        <div style=\"font-size:0.8rem;color:#6b7280\">Falhou</div>\n      </div>\n      <div style=\"flex:1;text-align:center;padding:12px;background:#fafafa;border-radius:8px;border:1px solid #e2e8f0\">\n        <div style=\"font-size:1.8rem;font-weight:700;color:#6b7280\">{{ $json.body.skipped }}</div>\n        <div style=\"font-size:0.8rem;color:#6b7280\">Pulados</div>\n      </div>\n      <div style=\"flex:1;text-align:center;padding:12px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe\">\n        <div style=\"font-size:1.8rem;font-weight:700;color:#2563eb\">{{ $json.body.passRate }}%</div>\n        <div style=\"font-size:0.8rem;color:#6b7280\">Taxa</div>\n      </div>\n    </div>\n    <table style=\"width:100%;border-collapse:collapse;font-size:0.9rem\">\n      <tr><td style=\"padding:8px 0;color:#6b7280;width:140px\">Repositório</td><td><a href=\"{{ $json.body.repoUrl }}\" style=\"color:#2563eb\">{{ $json.body.repo }}</a></td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Branch</td><td><code style=\"background:#e2e8f0;padding:2px 6px;border-radius:4px\">{{ $json.body.branch }}</code></td></tr>\n      <tr><td style=\"padding:8px 0;color:#6b7280\">Commit</td><td><code>{{ $json.body.sha }}</code> &nbsp;<em style=\"color:#9ca3af\">{{ $json.body.commitMessage }}</em></td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Autor</td><td>{{ $json.body.author }}</td></tr>\n      <tr><td style=\"padding:8px 0;color:#6b7280\">Total</td><td>{{ $json.body.total }} teste(s)</td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Data/Hora</td><td>{{ $json.body.timestamp }}</td></tr>\n    </table>\n    {{ $json.body.failedTests && $json.body.failedTests.length > 0 ? '<div style=\"margin-top:16px;padding:12px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca\"><p style=\"margin:0 0 8px;font-weight:600;color:#dc2626\">Testes que falharam:</p><ul style=\"margin:0;padding-left:20px;font-size:0.85rem;color:#374151\">' + $json.body.failedTests.map(t => \"<li>\" + t + \"</li>\").join(\"\") + '</ul></div>' : '' }}\n    <div style=\"margin-top:20px\">\n      {{ $json.body.actionsUrl ? '<a href=\"' + $json.body.actionsUrl + '\" style=\"display:inline-block;padding:8px 16px;background:#7c3aed;color:#fff;border-radius:6px;text-decoration:none;font-size:0.85rem\">⚙️ Ver GitHub Actions</a>' : '' }}\n    </div>\n  </div>\n  <div style=\"padding:12px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#9ca3af\">\n    Gerado pelo PHP DocGen Runner\n  </div>\n</div>\n</body></html>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-tests",
+      "name": "Formatar Testes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "subject",
+              "value": "=📄 [DocGen] Documentação gerada — {{ $json.body.repo }}"
+            },
+            {
+              "name": "body",
+              "value": "=<!DOCTYPE html><html><body style=\"font-family:system-ui,sans-serif;background:#f8fafc;margin:0;padding:24px\">\n<div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)\">\n  <div style=\"background:#0ea5e9;padding:20px 28px\">\n    <h1 style=\"color:#fff;margin:0;font-size:1.2rem\">📄 Documentação gerada com sucesso</h1>\n    <p style=\"color:#bae6fd;margin:4px 0 0;font-size:0.9rem\">{{ $json.body.repo }} · {{ $json.body.branch }}</p>\n  </div>\n  <div style=\"padding:24px 28px\">\n    <table style=\"width:100%;border-collapse:collapse;font-size:0.9rem\">\n      <tr><td style=\"padding:8px 0;color:#6b7280;width:160px\">Repositório</td><td>{{ $json.body.repo }}</td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Branch</td><td><code style=\"background:#e2e8f0;padding:2px 6px;border-radius:4px\">{{ $json.body.branch }}</code></td></tr>\n      <tr><td style=\"padding:8px 0;color:#6b7280\">Arquivos documentados</td><td><strong>{{ $json.body.filesDocumented }}</strong></td></tr>\n      <tr style=\"background:#f8fafc\"><td style=\"padding:8px 0;color:#6b7280\">Data/Hora</td><td>{{ $json.body.timestamp }}</td></tr>\n    </table>\n    <div style=\"margin-top:20px\">\n      {{ $json.body.docsUrl ? '<a href=\"' + $json.body.docsUrl + '\" style=\"display:inline-block;padding:8px 16px;background:#0ea5e9;color:#fff;border-radius:6px;text-decoration:none;font-size:0.85rem\">📄 Acessar Documentação Online</a>' : '' }}\n    </div>\n  </div>\n  <div style=\"padding:12px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#9ca3af\">\n    Gerado pelo PHP DocGen Runner\n  </div>\n</div>\n</body></html>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-docs",
+      "name": "Formatar Docs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [720, 480]
+    },
+    {
+      "parameters": {
+        "fromEmail": "filipefranciscof3@gmail.com",
+        "toEmail": "filipefranciscof3@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "send-email-push",
+      "name": "Enviar Email (Push)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [960, 120]
+    },
+    {
+      "parameters": {
+        "fromEmail": "filipefranciscof3@gmail.com",
+        "toEmail": "filipefranciscof3@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "send-email-tests",
+      "name": "Enviar Email (Testes)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [960, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "filipefranciscof3@gmail.com",
+        "toEmail": "filipefranciscof3@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "send-email-docs",
+      "name": "Enviar Email (Docs)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [960, 480]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true }",
+        "options": {}
+      },
+      "id": "respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Tipo de Evento", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tipo de Evento": {
+      "main": [
+        [{ "node": "Formatar Push",   "type": "main", "index": 0 }],
+        [{ "node": "Formatar Testes", "type": "main", "index": 0 }],
+        [{ "node": "Formatar Docs",   "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Push": {
+      "main": [
+        [{ "node": "Enviar Email (Push)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Testes": {
+      "main": [
+        [{ "node": "Enviar Email (Testes)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Docs": {
+      "main": [
+        [{ "node": "Enviar Email (Docs)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar Email (Push)": {
+      "main": [
+        [{ "node": "Responder OK", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar Email (Testes)": {
+      "main": [
+        [{ "node": "Responder OK", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar Email (Docs)": {
+      "main": [
+        [{ "node": "Responder OK", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["docgen", "php", "notifications"]
+}
