@@ -7,12 +7,6 @@
 class StringHelper
 {
 
-    /**
-     * Converte uma string em um formato "slug", substituindo caracteres não alfanuméricos por hífens.
-     * 
-     * @param mixed $text A string a ser convertida em slug.
-     * @return mixed A string formatada como slug.
-     */
     public function slugify($text)
     {
         $text = strtolower($text);
