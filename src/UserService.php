@@ -6,13 +6,7 @@
 class UserService {
 
 
-    /**
-     * Cria um novo usuário com um ID aleatório, nome e email fornecidos.
-     * 
-     * @param mixed $name O nome do usuário a ser criado.
-     * @param mixed $email O email do usuário a ser criado.
-     * @return mixed Um array contendo o ID, nome e email do usuário.
-     */
+
     public function createUser($name, $email) {
         return [
             "id" => rand(1, 1000),
